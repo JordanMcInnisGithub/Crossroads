@@ -44,6 +44,13 @@ public class CustomTerrain : MonoBehaviour
 	public enum VoronoiType { Linear = 0, Power = 1, Combined = 2, SinPow = 3 }
 	public VoronoiType voronoiType = VoronoiType.Linear;
 
+	//Midpoint displacement
+	public float MPDheightMin = -2f;
+	public float MPDheightMax = 2f;
+	public float MPDheightDampenerPower = 2f;
+	public float MPDroughness = 2.0f;
+
+
 	public List<PerlinParameters> perlinParameters = new List<PerlinParameters>()
 	{
 		// table requires one entry;
@@ -211,6 +218,78 @@ public class CustomTerrain : MonoBehaviour
 				}
 			}
 		}
+		terrainData.SetHeights(0, 0, heightMap);
+	}
+
+	public void MidPointDisplacement()
+	{
+		float[,] heightMap = GetHeightMap();
+		int width = terrainData.heightmapResolution - 1;
+		int squareSize = width;
+		float heightMin = MPDheightMin;
+		float heightMax = MPDheightMax;
+		float heightDampener = (float)Mathf.Pow(MPDheightDampenerPower, -1 * MPDroughness);
+
+		int cornerX, cornerZ;
+		int midX, midZ;
+		int pmidXL, pmidXR, pmidZU, pmidZD;
+
+		while (squareSize > 0)
+		{
+			for (int x = 0; x < width; x += squareSize)
+			{
+				for (int z = 0; z < width; z += squareSize)
+				{
+					cornerX = (x + squareSize);
+					cornerZ = (z + squareSize);
+
+					midX = (int)(x + squareSize / 2.0f);
+					midZ = (int)(z + squareSize / 2.0f);
+
+					heightMap[midX, midZ] = (float)((heightMap[x, z] + heightMap[cornerX, z] + heightMap[x, cornerZ] + heightMap[cornerX, cornerZ]) / 4.0f + UnityEngine.Random.Range(heightMin, heightMax));
+				}
+			}
+
+			for (int x = 0; x < width; x += squareSize)
+			{
+				for (int z = 0; z < width; z += squareSize)
+				{
+					cornerX = (x + squareSize);
+					cornerZ = (z + squareSize);
+
+					midX = (int)(x + squareSize / 2.0f);
+					midZ = (int)(z + squareSize / 2.0f);
+
+					pmidXR = (int)(midX + squareSize);
+					pmidXL = (int)(midX - squareSize);
+					pmidZD = (int)(midZ - squareSize);
+					pmidZU = (int)(midZ + squareSize);
+
+					if (pmidXL <= 0 || pmidZD <= 0 || pmidXR >= width - 1 || pmidZU >= width - 1) continue;
+					//Calculate the square value for the bottom side
+
+					//bot mid
+					heightMap[midX, z] = (float)((heightMap[x, z] + heightMap[cornerX, z] + heightMap[midX, pmidZD] + heightMap[midX, midZ]) / 4.0f + UnityEngine.Random.Range(heightMin, heightMax));
+
+					//top mid
+					heightMap[midX, cornerZ] = (float)((heightMap[x, cornerZ] + heightMap[midX, midZ] + heightMap[cornerX, cornerZ] + heightMap[midX, pmidZU]) / 4.0f + UnityEngine.Random.Range(heightMin, heightMax));
+
+					//mid left
+					heightMap[x, midZ] = (float)((heightMap[x, z] + heightMap[pmidXL, midZ] + heightMap[x, cornerZ] + heightMap[midX, midZ]) / 4.0f + UnityEngine.Random.Range(heightMin, heightMax));
+
+					//mid right
+					heightMap[cornerX, midZ] = (float)((heightMap[cornerX, z] + heightMap[midX, midZ] + heightMap[cornerX, cornerZ] + heightMap[pmidXR, midZ]) / 4.0f + UnityEngine.Random.Range(heightMin, heightMax));
+
+				}
+			}
+			squareSize = (int)(squareSize / 2.0f);
+
+			//this is the magic, this is what reduces terrain and prevents everything being max height
+			heightMax *= heightDampener;
+			heightMin *= heightDampener;
+
+		}
+
 		terrainData.SetHeights(0, 0, heightMap);
 	}
 

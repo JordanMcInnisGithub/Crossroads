@@ -28,6 +28,12 @@ public class CustomTerrainEditor : Editor
 	SerializedProperty vpeakCount;
 	SerializedProperty voronoiType;
 
+	SerializedProperty MPDheightMin;
+	SerializedProperty MPDheightMax;
+	SerializedProperty MPDheightDampenerPower;
+	SerializedProperty MPDroughness;
+
+
 
 
 
@@ -39,6 +45,8 @@ public class CustomTerrainEditor : Editor
 	bool showPerlinNoise = false;
 	bool showMultiplePerlin = false;
 	bool showVoronoi = false;
+	bool showMidPoint = false;
+
 	private void OnEnable()
 	{
 		randomHeightRange = serializedObject.FindProperty("randomHeightRange"); // this links to other property in custom terrain
@@ -58,6 +66,11 @@ public class CustomTerrainEditor : Editor
 		vmaxHeight = serializedObject.FindProperty("vmaxHeight");
 		vpeakCount = serializedObject.FindProperty("vpeakCount");
 		voronoiType = serializedObject.FindProperty("voronoiType");
+		MPDheightMin = serializedObject.FindProperty("MPDheightMin");
+		MPDheightMax = serializedObject.FindProperty("MPDheightMax");
+		MPDheightDampenerPower = serializedObject.FindProperty("MPDheightDampenerPower");
+		MPDroughness = serializedObject.FindProperty("MPDroughness");
+
 
 
 
@@ -136,6 +149,18 @@ public class CustomTerrainEditor : Editor
 			}
 		}
 
+		showMidPoint = EditorGUILayout.Foldout(showMidPoint, "Midpoint");
+		if (showMidPoint)
+		{
+			EditorGUILayout.PropertyField(MPDheightMin);
+			EditorGUILayout.PropertyField(MPDheightMax);
+			EditorGUILayout.PropertyField(MPDheightDampenerPower);
+			EditorGUILayout.PropertyField(MPDroughness);
+			if (GUILayout.Button("Midpoint"))
+			{
+				terrain.MidPointDisplacement();
+			}
+		}
 		EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 		if (GUILayout.Button("Reset Terrain"))
 		{
