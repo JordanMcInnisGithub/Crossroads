@@ -33,6 +33,9 @@ public class CustomTerrainEditor : Editor
 	SerializedProperty MPDheightDampenerPower;
 	SerializedProperty MPDroughness;
 
+	SerializedProperty SmoothAmount;
+
+
 
 
 
@@ -46,6 +49,7 @@ public class CustomTerrainEditor : Editor
 	bool showMultiplePerlin = false;
 	bool showVoronoi = false;
 	bool showMidPoint = false;
+	bool showSmoothing = false;
 
 	private void OnEnable()
 	{
@@ -70,6 +74,8 @@ public class CustomTerrainEditor : Editor
 		MPDheightMax = serializedObject.FindProperty("MPDheightMax");
 		MPDheightDampenerPower = serializedObject.FindProperty("MPDheightDampenerPower");
 		MPDroughness = serializedObject.FindProperty("MPDroughness");
+		SmoothAmount = serializedObject.FindProperty("SmoothAmount");
+
 
 
 
@@ -78,10 +84,10 @@ public class CustomTerrainEditor : Editor
 	public override void OnInspectorGUI()
 	{
 		serializedObject.Update();
-
 		CustomTerrain terrain = (CustomTerrain)target;
 
 		EditorGUILayout.PropertyField(resetTerrain);
+
 		showRandom = EditorGUILayout.Foldout(showRandom, "Random");
 		if (showRandom)
 		{
@@ -94,6 +100,7 @@ public class CustomTerrainEditor : Editor
 				terrain.RandomTerrain();
 			}
 		}
+
 		showPerlinNoise = EditorGUILayout.Foldout(showPerlinNoise, "Single Perlin Noise");
 		if (showPerlinNoise)
 		{
@@ -113,6 +120,7 @@ public class CustomTerrainEditor : Editor
 			}
 
 		}
+
 		showMultiplePerlin = EditorGUILayout.Foldout(showMultiplePerlin, "Multiple Perlin");
 		if (showMultiplePerlin)
 		{
@@ -134,6 +142,7 @@ public class CustomTerrainEditor : Editor
 				terrain.MultiplePerlinTerrain();
 			}
 		}
+
 		showVoronoi = EditorGUILayout.Foldout(showVoronoi, "Voronoi");
 		if (showVoronoi)
 		{
@@ -161,7 +170,19 @@ public class CustomTerrainEditor : Editor
 				terrain.MidPointDisplacement();
 			}
 		}
+
+		showSmoothing = EditorGUILayout.Foldout(showSmoothing, "Smoothing");
+		if (showSmoothing)
+		{
+			EditorGUILayout.IntSlider(SmoothAmount, 1, 10, new GUIContent("Smooth Strength"));
+			if (GUILayout.Button("Smooth"))
+			{
+				terrain.Smooth();
+			}
+		}
+
 		EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+
 		if (GUILayout.Button("Reset Terrain"))
 		{
 			terrain.ResetTerrain();

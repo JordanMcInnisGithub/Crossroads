@@ -4,6 +4,7 @@ using UnityEngine;
 
 public static class TerrainUtils
 {
+	// brownian motion currently only used for perlin noise generation
 	public static float fBM(float x, float z, int oct, float persistance)
 	{
 		float total = 0;

@@ -169,6 +169,11 @@ MonoBehaviour:
   vminHeight: 0.07
   vmaxHeight: 0.23
   voronoiType: 3
+  MPDheightMin: -2
+  MPDheightMax: 2
+  MPDheightDampenerPower: 2
+  MPDroughness: 2
+  SmoothAmount: 4
   perlinParameters:
   - mPerlinXScale: 0.01
     mPerlinZScale: 0.01

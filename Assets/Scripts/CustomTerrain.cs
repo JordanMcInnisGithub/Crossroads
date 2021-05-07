@@ -35,7 +35,7 @@ public class CustomTerrain : MonoBehaviour
 		public bool remove = false;
 	}
 
-	//Voronoi
+	//Voronoi --------
 	public int vpeakCount = 3;
 	public float vfalloff = 0.2f;
 	public float vdropoff = 0.6f;
@@ -44,11 +44,14 @@ public class CustomTerrain : MonoBehaviour
 	public enum VoronoiType { Linear = 0, Power = 1, Combined = 2, SinPow = 3 }
 	public VoronoiType voronoiType = VoronoiType.Linear;
 
-	//Midpoint displacement
+	//Midpoint displacement --------
 	public float MPDheightMin = -2f;
 	public float MPDheightMax = 2f;
 	public float MPDheightDampenerPower = 2f;
 	public float MPDroughness = 2.0f;
+
+	//Smoothing --------
+	public int SmoothAmount = 1;
 
 
 	public List<PerlinParameters> perlinParameters = new List<PerlinParameters>()
@@ -291,6 +294,51 @@ public class CustomTerrain : MonoBehaviour
 		}
 
 		terrainData.SetHeights(0, 0, heightMap);
+	}
+
+	public void Smooth()
+	{
+		float[,] heightMap = GetHeightMap();
+		for (int i = 0; i < SmoothAmount; i++)
+		{
+			for (int z = 0; z < terrainData.heightmapResolution; z++)
+			{
+				for (int x = 0; x < terrainData.heightmapResolution; x++)
+				{
+					float avgHeight = heightMap[x, z];
+					List<Vector2> neighbours = GenerateNeighbours(new Vector2(x, z), terrainData.heightmapResolution, terrainData.heightmapResolution);
+
+					foreach (Vector2 n in neighbours)
+					{
+						avgHeight += heightMap[(int)n.x, (int)n.y];
+					}
+
+					heightMap[x, z] = avgHeight / ((float)neighbours.Count + 1);
+				}
+			}
+		}
+
+		terrainData.SetHeights(0, 0, heightMap);
+	}
+
+	List<Vector2> GenerateNeighbours(Vector2 pos, int width, int height)
+	{
+		List<Vector2> neighbours = new List<Vector2>();
+
+		for (int z = -1; z < 2; z++)
+		{
+			for (int x = -1; x < 2; x++)
+			{
+				if (!(x == 0 && z == 0))
+				{
+					Vector2 nPos = new Vector2(Mathf.Clamp(pos.x + x, 0, width - 1), Mathf.Clamp(pos.y + z, 0, height - 1));
+
+					if (!neighbours.Contains(nPos)) neighbours.Add(nPos);
+				}
+			}
+		}
+
+		return neighbours;
 	}
 
 	void AddTag(SerializedProperty tagsProp, string newTag)
