@@ -175,52 +175,14 @@ MonoBehaviour:
   MPDroughness: 2
   SmoothAmount: 4
   splatHeights:
-  - texture: {fileID: 2800000, guid: badc4e58ab4c4de4fbc591540c5ccbe1, type: 3}
-    minHeight: 0.4
-    maxHeight: 1
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 10, y: 10}
-    offset: 0.003
-    noiseX: 0.05
-    noiseY: 0.05
-    noiseScale: 0.1
-    remove: 0
-  - texture: {fileID: 2800000, guid: 9e97314480fcc844da9bfd134b42fab5, type: 3}
-    minHeight: 0.2
-    maxHeight: 0.4
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 50, y: 50}
-    offset: 0.003
-    noiseX: 0.05
-    noiseY: 0.05
-    noiseScale: 0.1
-    remove: 0
-  - texture: {fileID: 2800000, guid: 66bfffbfc1446e24dbf6081d20fc9daa, type: 3}
-    minHeight: 0.15
-    maxHeight: 0.2
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 50, y: 50}
-    offset: 0.003
-    noiseX: 0.05
-    noiseY: 0.05
-    noiseScale: 0.1
-    remove: 0
-  - texture: {fileID: 2800000, guid: 42a91a090222e8948a229c10e2b60a81, type: 3}
-    minHeight: 0.1
-    maxHeight: 0.15
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 50, y: 50}
-    offset: 0.003
-    noiseX: 0.05
-    noiseY: 0.05
-    noiseScale: 0.1
-    remove: 0
   - texture: {fileID: 2800000, guid: 3cf543484d2fb7347b203b934a632fa6, type: 3}
     minHeight: 0
-    maxHeight: 0.1
+    maxHeight: 1
+    minSlope: 0
+    maxSlope: 1.5
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 50, y: 50}
-    offset: 0.003
+    tileSize: {x: 10, y: 10}
+    offset: 0.1
     noiseX: 0.05
     noiseY: 0.05
     noiseScale: 0.1
