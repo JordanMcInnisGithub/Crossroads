@@ -53,7 +53,29 @@ public class CustomTerrain : MonoBehaviour
 	//Smoothing --------
 	public int SmoothAmount = 1;
 
+	//Splatmaps --------
 
+	[System.Serializable]
+	public class SplatHeights
+	{
+		public Texture2D texture = null;
+		public float minHeight = 0.1f;
+		public float maxHeight = 0.2f;
+		public Vector2 tileOffset = new Vector2(0, 0);
+		public Vector2 tileSize = new Vector2(50, 50);
+		public float offset = 0.001f;
+		public float noiseX = 0.05f;
+		public float noiseY = 0.05f;
+		public float noiseScale = 0.1f;
+		public bool remove = false;
+	}
+
+	//Tables --------
+	public List<SplatHeights> splatHeights = new List<SplatHeights>()
+	{
+		//table requires one entry
+		new SplatHeights()
+	};
 	public List<PerlinParameters> perlinParameters = new List<PerlinParameters>()
 	{
 		// table requires one entry;
@@ -81,6 +103,7 @@ public class CustomTerrain : MonoBehaviour
 		terrain = this.GetComponent<Terrain>();
 		terrainData = Terrain.activeTerrain.terrainData;
 	}
+
 	float[,] GetHeightMap()
 	{
 		if (!resetTerrain)
@@ -93,6 +116,86 @@ public class CustomTerrain : MonoBehaviour
 		}
 	}
 
+	public void AddNewSplatHeight()
+	{
+		splatHeights.Add(new SplatHeights());
+	}
+	public void RemoveSplatHeight()
+	{
+		List<SplatHeights> keptSplatHeights = new List<SplatHeights>();
+		for (int i = 0; i < splatHeights.Count; i++)
+		{
+			if (!splatHeights[i].remove)
+			{
+				keptSplatHeights.Add(splatHeights[i]);
+			}
+		}
+		if (keptSplatHeights.Count == 0)
+		{
+			keptSplatHeights.Add(splatHeights[0]);
+		}
+		splatHeights = keptSplatHeights;
+	}
+
+	public void SplatMaps()
+	{
+		TerrainLayer[] newSplatPrototypes;
+		newSplatPrototypes = new TerrainLayer[splatHeights.Count];
+		int spindex = 0;
+		foreach (SplatHeights sh in splatHeights)
+		{
+			newSplatPrototypes[spindex] = new TerrainLayer();
+			newSplatPrototypes[spindex].diffuseTexture = sh.texture;
+			newSplatPrototypes[spindex].tileOffset = sh.tileOffset;
+			newSplatPrototypes[spindex].tileSize = sh.tileSize;
+			newSplatPrototypes[spindex].diffuseTexture.Apply(true);
+			spindex++;
+		}
+		terrainData.terrainLayers = newSplatPrototypes;
+
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+
+		float[,,] splatMapdata = new float[terrainData.alphamapResolution, terrainData.alphamapResolution, terrainData.alphamapLayers];
+
+		for (int z = 0; z < terrainData.alphamapResolution; z++)
+		{
+			for (int x = 0; x < terrainData.alphamapWidth; x++)
+			{
+				float[] splat = new float[terrainData.alphamapLayers];
+				for (int i = 0; i < splatHeights.Count; i++)
+				{
+					float noise = Mathf.PerlinNoise(x * splatHeights[i].noiseX, z * splatHeights[i].noiseY) * splatHeights[i].noiseScale;
+					float offset = splatHeights[i].offset + noise;
+					float thisHeightStart = splatHeights[i].minHeight - offset;
+					float thisHeightStop = splatHeights[i].maxHeight + offset;
+					if ((heightMap[x,z] >= thisHeightStart && heightMap[x,z] <= thisHeightStop))
+					{
+						splat[i] = 1;
+					}
+				}
+				NormalizeVector(splat);
+				for (int j = 0; j < splatHeights.Count; j++)
+				{
+					splatMapdata[x, z, j] = splat[j];
+				}
+			}
+		}
+		terrainData.SetAlphamaps(0, 0, splatMapdata);
+	}
+
+	public void NormalizeVector(float[] v)
+	{
+		float total = 0;
+		for (int i = 0; i < v.Length; i++)
+		{
+			total += v[i];
+		}
+
+		for (int i = 0; i < v.Length; i++)
+		{
+			v[i] /= total;
+		}
+	}
 	public void Perlin()
 	{
 		float[,] heightMap = GetHeightMap();

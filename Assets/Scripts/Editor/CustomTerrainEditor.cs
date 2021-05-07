@@ -35,6 +35,8 @@ public class CustomTerrainEditor : Editor
 
 	SerializedProperty SmoothAmount;
 
+	GUITableState SplatMapTable;
+	SerializedProperty splatHeights;
 
 
 
@@ -50,6 +52,7 @@ public class CustomTerrainEditor : Editor
 	bool showVoronoi = false;
 	bool showMidPoint = false;
 	bool showSmoothing = false;
+	bool showSplatMaps = false;
 
 	private void OnEnable()
 	{
@@ -75,9 +78,8 @@ public class CustomTerrainEditor : Editor
 		MPDheightDampenerPower = serializedObject.FindProperty("MPDheightDampenerPower");
 		MPDroughness = serializedObject.FindProperty("MPDroughness");
 		SmoothAmount = serializedObject.FindProperty("SmoothAmount");
-
-
-
+		SplatMapTable = new GUITableState("SplatMapTable");
+		splatHeights = serializedObject.FindProperty("splatHeights");
 
 
 	}
@@ -168,6 +170,29 @@ public class CustomTerrainEditor : Editor
 			if (GUILayout.Button("Midpoint"))
 			{
 				terrain.MidPointDisplacement();
+			}
+		}
+
+		showSplatMaps = EditorGUILayout.Foldout(showSplatMaps, "Splat Maps/Textures");
+		if (showSplatMaps)
+		{
+			EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+			GUILayout.Label("Splat Maps", EditorStyles.boldLabel);
+			SplatMapTable = GUITableLayout.DrawTable(SplatMapTable, serializedObject.FindProperty("splatHeights"));
+
+			EditorGUILayout.BeginHorizontal();
+			if (GUILayout.Button("+"))
+			{
+				terrain.AddNewSplatHeight();
+			}
+			if (GUILayout.Button("-"))
+			{
+				terrain.RemoveSplatHeight();
+			}
+			EditorGUILayout.EndHorizontal();
+			if (GUILayout.Button("Apply SplatMaps"))
+			{
+				terrain.SplatMaps();
 			}
 		}
 
