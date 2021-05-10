@@ -163,23 +163,83 @@ MonoBehaviour:
   perlinOctaves: 4
   perlinPersistance: 8.12
   perlinHeightScale: 0.888
-  vpeakCount: 10
-  vfalloff: 10
-  vdropoff: 10
+  vpeakCount: 5
+  vfalloff: 4.38
+  vdropoff: 7.14
   vminHeight: 0.07
-  vmaxHeight: 0.23
-  voronoiType: 3
+  vmaxHeight: 0.388
+  voronoiType: 0
   MPDheightMin: -2
-  MPDheightMax: 2
+  MPDheightMax: 1.8
   MPDheightDampenerPower: 2
   MPDroughness: 2
-  SmoothAmount: 4
+  SmoothAmount: 5
   splatHeights:
+  - texture: {fileID: 2800000, guid: 2ac139036f538cc42a8301628453cad5, type: 3}
+    minHeight: 0
+    maxHeight: 0.01
+    minSlope: 0
+    maxSlope: 25
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 3, y: 3}
+    offset: 0.01
+    noiseX: 0.03
+    noiseY: 0.03
+    noiseScale: 0.1
+    remove: 0
+  - texture: {fileID: 2800000, guid: b7092185d138e6240b14133750049404, type: 3}
+    minHeight: 0
+    maxHeight: 0.01
+    minSlope: 0
+    maxSlope: 35
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 3, y: 3}
+    offset: 0.001
+    noiseX: 0.05
+    noiseY: 0.05
+    noiseScale: 0.1
+    remove: 0
   - texture: {fileID: 2800000, guid: 3cf543484d2fb7347b203b934a632fa6, type: 3}
     minHeight: 0
-    maxHeight: 1
+    maxHeight: 0.2
     minSlope: 0
-    maxSlope: 1.5
+    maxSlope: 40
+    tileOffset: {x: 4, y: 1}
+    tileSize: {x: 8, y: 8}
+    offset: 0.01
+    noiseX: 0.02
+    noiseY: 0.02
+    noiseScale: 0.05
+    remove: 0
+  - texture: {fileID: 2800000, guid: 9e97314480fcc844da9bfd134b42fab5, type: 3}
+    minHeight: 0
+    maxHeight: 0.25
+    minSlope: 40
+    maxSlope: 90
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 10, y: 10}
+    offset: 0.05
+    noiseX: 0.05
+    noiseY: 0.05
+    noiseScale: 0.1
+    remove: 0
+  - texture: {fileID: 2800000, guid: badc4e58ab4c4de4fbc591540c5ccbe1, type: 3}
+    minHeight: 0.4
+    maxHeight: 0.8
+    minSlope: 0
+    maxSlope: 90
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 15, y: 15}
+    offset: 0.01
+    noiseX: 0.025
+    noiseY: 0.025
+    noiseScale: 0.1
+    remove: 0
+  - texture: {fileID: 2800000, guid: a28275b5e44d45d46b095b81f29862b4, type: 3}
+    minHeight: 0
+    maxHeight: 0.4
+    minSlope: 35
+    maxSlope: 40
     tileOffset: {x: 0, y: 0}
     tileSize: {x: 10, y: 10}
     offset: 0.1
@@ -187,22 +247,54 @@ MonoBehaviour:
     noiseY: 0.05
     noiseScale: 0.1
     remove: 0
+  - texture: {fileID: 2800000, guid: 66bfffbfc1446e24dbf6081d20fc9daa, type: 3}
+    minHeight: 0.25
+    maxHeight: 1
+    minSlope: 0
+    maxSlope: 90
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 10, y: 10}
+    offset: 0.001
+    noiseX: 0.05
+    noiseY: 0.05
+    noiseScale: 0
+    remove: 0
+  - texture: {fileID: 2800000, guid: 42a91a090222e8948a229c10e2b60a81, type: 3}
+    minHeight: 0.2
+    maxHeight: 0.25
+    minSlope: 0
+    maxSlope: 90
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 10, y: 10}
+    offset: 0.001
+    noiseX: 0.05
+    noiseY: 0.05
+    noiseScale: 0.1
+    remove: 0
   perlinParameters:
-  - mPerlinXScale: 0.01
-    mPerlinZScale: 0.01
-    mPerlinOctaves: 3
+  - mPerlinXScale: 0.001
+    mPerlinZScale: 0.001
+    mPerlinOctaves: 2
+    mPerlinPersistance: 10
+    mPerlinHeightScale: 0.4
+    mPerlinOffsetX: 2314321
+    mPerlinOffsetZ: 1234213
+    remove: 0
+  - mPerlinXScale: 0.005
+    mPerlinZScale: 0.005
+    mPerlinOctaves: 2
     mPerlinPersistance: 8
     mPerlinHeightScale: 0.09
-    mPerlinOffsetX: 0
-    mPerlinOffsetZ: 0
+    mPerlinOffsetX: 23142134
+    mPerlinOffsetZ: 15156321
     remove: 0
-  - mPerlinXScale: 0.04
-    mPerlinZScale: 0.04
-    mPerlinOctaves: 4
+  - mPerlinXScale: 0.05
+    mPerlinZScale: 0.05
+    mPerlinOctaves: 1
     mPerlinPersistance: 5
     mPerlinHeightScale: 0.01
-    mPerlinOffsetX: 40
-    mPerlinOffsetZ: 250
+    mPerlinOffsetX: 12342134
+    mPerlinOffsetZ: 12341256
     remove: 0
   terrain: {fileID: 150823179}
   terrainData: {fileID: 15600000, guid: 7a9da5f1405ad0449a3550cb497ff8fe, type: 2}
@@ -311,6 +403,101 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1335375384
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1335375388}
+  - component: {fileID: 1335375387}
+  - component: {fileID: 1335375386}
+  - component: {fileID: 1335375385}
+  m_Layer: 0
+  m_Name: Cube
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1335375385
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335375384}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1335375386
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335375384}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1335375387
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335375384}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1335375388
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335375384}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 926.2, y: 56.97, z: 426.1}
+  m_LocalScale: {x: 0.8, y: 2, z: 0.8}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1687258581
 GameObject:

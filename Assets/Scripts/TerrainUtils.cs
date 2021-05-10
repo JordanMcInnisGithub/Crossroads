@@ -22,4 +22,9 @@ public static class TerrainUtils
 
 		return total / maxValue;
 	}
+
+	public static float Map(float value, float origonalMin, float origonalMax, float targetMin, float targetMax)
+	{
+		return (value - origonalMin) * (targetMax - targetMin) / (origonalMax - origonalMin) + targetMin;
+	}
 }

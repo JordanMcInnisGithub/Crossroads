@@ -140,6 +140,7 @@ public class CustomTerrain : MonoBehaviour
 	}
 
 	//uses algo, unity does it better
+	// DEPRECATED
 	float GetSteepness(float[,] heightmap, int x, int z, int width, int height)
 	{
 		float h = heightmap[x, z];
