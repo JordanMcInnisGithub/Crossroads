@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 150823179}
   - component: {fileID: 150823178}
   - component: {fileID: 150823177}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Terrain
   m_TagString: Terrain
   m_Icon: {fileID: 0}
@@ -155,158 +155,80 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   randomHeightRange: {x: 0, y: 0.1}
-  resetTerrain: 0
-  perlinXScale: 0.0005
-  perlinZScale: 0.0005
-  perlinOffsetX: 4486
-  perlinOffsetZ: 3873
-  perlinOctaves: 4
-  perlinPersistance: 8.12
-  perlinHeightScale: 0.888
-  vpeakCount: 5
-  vfalloff: 4.38
-  vdropoff: 7.14
-  vminHeight: 0.07
-  vmaxHeight: 0.388
+  resetTerrain: 1
+  perlinXScale: 0.01
+  perlinZScale: 0.01
+  perlinOffsetX: 0
+  perlinOffsetZ: 0
+  perlinOctaves: 3
+  perlinPersistance: 8
+  perlinHeightScale: 0
+  vpeakCount: 3
+  vfalloff: 0.2
+  vdropoff: 0.6
+  vminHeight: 0.25
+  vmaxHeight: 0.412
   voronoiType: 0
   MPDheightMin: -2
-  MPDheightMax: 1.8
+  MPDheightMax: 2
   MPDheightDampenerPower: 2
   MPDroughness: 2
-  SmoothAmount: 5
+  SmoothAmount: 1
   maxTrees: 10000
   treeSpacing: 5
+  maxDetails: 5000
+  detailSpacing: 4
   splatHeights:
-  - texture: {fileID: 2800000, guid: 2ac139036f538cc42a8301628453cad5, type: 3}
-    minHeight: 0
-    maxHeight: 0.01
-    minSlope: 0
-    maxSlope: 25
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 3, y: 3}
-    offset: 0.01
-    noiseX: 0.03
-    noiseY: 0.03
-    noiseScale: 0.1
-    remove: 0
-  - texture: {fileID: 2800000, guid: b7092185d138e6240b14133750049404, type: 3}
-    minHeight: 0
-    maxHeight: 0.01
-    minSlope: 0
-    maxSlope: 35
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 3, y: 3}
-    offset: 0.001
-    noiseX: 0.05
-    noiseY: 0.05
-    noiseScale: 0.1
-    remove: 0
   - texture: {fileID: 2800000, guid: 3cf543484d2fb7347b203b934a632fa6, type: 3}
     minHeight: 0
     maxHeight: 0.2
     minSlope: 0
-    maxSlope: 40
-    tileOffset: {x: 4, y: 1}
-    tileSize: {x: 8, y: 8}
-    offset: 0.01
-    noiseX: 0.02
-    noiseY: 0.02
-    noiseScale: 0.05
-    remove: 0
-  - texture: {fileID: 2800000, guid: 9e97314480fcc844da9bfd134b42fab5, type: 3}
-    minHeight: 0
-    maxHeight: 0.25
-    minSlope: 40
-    maxSlope: 90
+    maxSlope: 45
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 10, y: 10}
-    offset: 0.05
-    noiseX: 0.05
-    noiseY: 0.05
-    noiseScale: 0.1
-    remove: 0
-  - texture: {fileID: 2800000, guid: badc4e58ab4c4de4fbc591540c5ccbe1, type: 3}
-    minHeight: 0.4
-    maxHeight: 0.8
-    minSlope: 0
-    maxSlope: 90
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 15, y: 15}
-    offset: 0.01
-    noiseX: 0.025
-    noiseY: 0.025
-    noiseScale: 0.1
-    remove: 0
-  - texture: {fileID: 2800000, guid: a28275b5e44d45d46b095b81f29862b4, type: 3}
-    minHeight: 0
-    maxHeight: 0.4
-    minSlope: 35
-    maxSlope: 40
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 10, y: 10}
-    offset: 0.1
-    noiseX: 0.05
-    noiseY: 0.05
-    noiseScale: 0.1
-    remove: 0
-  - texture: {fileID: 2800000, guid: 66bfffbfc1446e24dbf6081d20fc9daa, type: 3}
-    minHeight: 0.25
-    maxHeight: 1
-    minSlope: 0
-    maxSlope: 90
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 10, y: 10}
-    offset: 0.001
+    tileSize: {x: 50, y: 50}
+    offset: 0
     noiseX: 0.05
     noiseY: 0.05
     noiseScale: 0
     remove: 0
-  - texture: {fileID: 2800000, guid: 42a91a090222e8948a229c10e2b60a81, type: 3}
-    minHeight: 0.2
-    maxHeight: 0.25
-    minSlope: 0
-    maxSlope: 90
-    tileOffset: {x: 0, y: 0}
-    tileSize: {x: 10, y: 10}
-    offset: 0.001
-    noiseX: 0.05
-    noiseY: 0.05
-    noiseScale: 0.1
-    remove: 0
   perlinParameters:
-  - mPerlinXScale: 0.001
-    mPerlinZScale: 0.001
-    mPerlinOctaves: 2
-    mPerlinPersistance: 10
-    mPerlinHeightScale: 0.4
-    mPerlinOffsetX: 346
-    mPerlinOffsetZ: 123
-    remove: 0
-  - mPerlinXScale: 0.005
-    mPerlinZScale: 0.005
-    mPerlinOctaves: 2
+  - mPerlinXScale: 0.01
+    mPerlinZScale: 0.01
+    mPerlinOctaves: 3
     mPerlinPersistance: 8
     mPerlinHeightScale: 0.09
-    mPerlinOffsetX: 234
-    mPerlinOffsetZ: 1234
-    remove: 0
-  - mPerlinXScale: 0.05
-    mPerlinZScale: 0.05
-    mPerlinOctaves: 1
-    mPerlinPersistance: 5
-    mPerlinHeightScale: 0.01
-    mPerlinOffsetX: 213434
-    mPerlinOffsetZ: 1266
+    mPerlinOffsetX: 0
+    mPerlinOffsetZ: 0
     remove: 0
   vegetation:
-  - prefab: {fileID: 1130392368877672, guid: 1ea71f643417d124d91e53eae7c666a6, type: 3}
-    minHeight: 0.2
-    maxHeight: 0.3
+  - prefab: {fileID: 1916657975341368, guid: e64e0b484ac273644af92dc0e00601a3, type: 3}
+    minHeight: 0
+    maxHeight: 0.2
     minSlope: 0
     maxSlope: 90
+    density: 5
+    minRotation: 0
+    maxRotation: 180
+    minScale: 1
+    maxScale: 1
+    colour1: {r: 1, g: 1, b: 1, a: 1}
+    colour2: {r: 1, g: 1, b: 1, a: 1}
+    lightColour: {r: 1, g: 1, b: 1, a: 1}
+    remove: 0
+  details:
+  - prototype: {fileID: 100000, guid: 047fc1cd24ff3e945872c4f22e03d106, type: 3}
+    prototypeTexture: {fileID: 0}
+    minHeight: 0.1
+    maxHeight: 0.2
+    minSlope: 0
+    maxSlope: 45
+    overlap: 0.05
+    feather: 0.05
+    density: 0.5
     remove: 0
   terrain: {fileID: 150823179}
   terrainData: {fileID: 15600000, guid: 7a9da5f1405ad0449a3550cb497ff8fe, type: 2}
+  terrainLayer: 8
 --- !u!154 &150823178
 TerrainCollider:
   m_ObjectHideFlags: 0
