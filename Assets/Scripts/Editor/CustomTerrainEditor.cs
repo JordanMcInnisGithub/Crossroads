@@ -38,6 +38,13 @@ public class CustomTerrainEditor : Editor
 	GUITableState SplatMapTable;
 	SerializedProperty splatHeights;
 
+	SerializedProperty maxTrees;
+	SerializedProperty treeSpacing;
+	SerializedProperty vegetation;
+	GUITableState vegMapTable;
+
+
+
 
 
 
@@ -53,6 +60,7 @@ public class CustomTerrainEditor : Editor
 	bool showMidPoint = false;
 	bool showSmoothing = false;
 	bool showSplatMaps = false;
+	bool showVeg = false;
 
 	private void OnEnable()
 	{
@@ -80,6 +88,13 @@ public class CustomTerrainEditor : Editor
 		SmoothAmount = serializedObject.FindProperty("SmoothAmount");
 		SplatMapTable = new GUITableState("SplatMapTable");
 		splatHeights = serializedObject.FindProperty("splatHeights");
+
+		maxTrees = serializedObject.FindProperty("maxTrees");
+		treeSpacing = serializedObject.FindProperty("treeSpacing");
+		vegMapTable = new GUITableState("vegMapTable");
+		vegetation = serializedObject.FindProperty("vegetation");
+
+
 
 
 	}
@@ -193,6 +208,32 @@ public class CustomTerrainEditor : Editor
 			if (GUILayout.Button("Apply SplatMaps"))
 			{
 				terrain.SplatMaps();
+			}
+		}
+
+		showVeg = EditorGUILayout.Foldout(showVeg, "Show Vegetation");
+		if (showVeg)
+		{
+			EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+			GUILayout.Label("Vegetation", EditorStyles.boldLabel);
+			EditorGUILayout.IntSlider(maxTrees, 0, 10000, new GUIContent("Maximum Trees"));
+			EditorGUILayout.IntSlider(treeSpacing, 2, 20, new GUIContent("Tree Spacing"));
+			vegMapTable = GUITableLayout.DrawTable(vegMapTable, serializedObject.FindProperty("vegetation"));
+
+			GUILayout.Space(20);
+			EditorGUILayout.BeginHorizontal();
+			if (GUILayout.Button("+"))
+			{
+				terrain.AddNewVegetation();
+			}
+			if (GUILayout.Button("-"))
+			{
+				terrain.RemoveVegetation();
+			}
+			EditorGUILayout.EndHorizontal();
+			if (GUILayout.Button("Apply Vegetation"))
+			{
+				terrain.PlantVegetation();
 			}
 		}
 

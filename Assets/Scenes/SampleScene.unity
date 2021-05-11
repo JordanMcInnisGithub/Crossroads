@@ -174,6 +174,8 @@ MonoBehaviour:
   MPDheightDampenerPower: 2
   MPDroughness: 2
   SmoothAmount: 5
+  maxTrees: 10000
+  treeSpacing: 5
   splatHeights:
   - texture: {fileID: 2800000, guid: 2ac139036f538cc42a8301628453cad5, type: 3}
     minHeight: 0
@@ -277,24 +279,31 @@ MonoBehaviour:
     mPerlinOctaves: 2
     mPerlinPersistance: 10
     mPerlinHeightScale: 0.4
-    mPerlinOffsetX: 2314321
-    mPerlinOffsetZ: 1234213
+    mPerlinOffsetX: 346
+    mPerlinOffsetZ: 123
     remove: 0
   - mPerlinXScale: 0.005
     mPerlinZScale: 0.005
     mPerlinOctaves: 2
     mPerlinPersistance: 8
     mPerlinHeightScale: 0.09
-    mPerlinOffsetX: 23142134
-    mPerlinOffsetZ: 15156321
+    mPerlinOffsetX: 234
+    mPerlinOffsetZ: 1234
     remove: 0
   - mPerlinXScale: 0.05
     mPerlinZScale: 0.05
     mPerlinOctaves: 1
     mPerlinPersistance: 5
     mPerlinHeightScale: 0.01
-    mPerlinOffsetX: 12342134
-    mPerlinOffsetZ: 12341256
+    mPerlinOffsetX: 213434
+    mPerlinOffsetZ: 1266
+    remove: 0
+  vegetation:
+  - prefab: {fileID: 1130392368877672, guid: 1ea71f643417d124d91e53eae7c666a6, type: 3}
+    minHeight: 0.2
+    maxHeight: 0.3
+    minSlope: 0
+    maxSlope: 90
     remove: 0
   terrain: {fileID: 150823179}
   terrainData: {fileID: 15600000, guid: 7a9da5f1405ad0449a3550cb497ff8fe, type: 2}
@@ -320,10 +329,10 @@ Terrain:
   serializedVersion: 6
   m_TerrainData: {fileID: 15600000, guid: 7a9da5f1405ad0449a3550cb497ff8fe, type: 2}
   m_TreeDistance: 5000
-  m_TreeBillboardDistance: 50
-  m_TreeCrossFadeLength: 5
-  m_TreeMaximumFullLODCount: 50
-  m_DetailObjectDistance: 80
+  m_TreeBillboardDistance: 2000
+  m_TreeCrossFadeLength: 200
+  m_TreeMaximumFullLODCount: 10000
+  m_DetailObjectDistance: 250
   m_DetailObjectDensity: 1
   m_HeightmapPixelError: 5
   m_SplatMapDistance: 1000
@@ -493,7 +502,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1335375384}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 926.2, y: 56.97, z: 426.1}
+  m_LocalPosition: {x: 926.2, y: 129.06, z: 426.1}
   m_LocalScale: {x: 0.8, y: 2, z: 0.8}
   m_Children: []
   m_Father: {fileID: 0}
@@ -510,7 +519,6 @@ GameObject:
   - component: {fileID: 1687258585}
   - component: {fileID: 1687258584}
   - component: {fileID: 1687258582}
-  - component: {fileID: 1687258583}
   - component: {fileID: 1687258586}
   m_Layer: 0
   m_Name: Main Camera
@@ -527,18 +535,6 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
   m_Enabled: 1
---- !u!114 &1687258583
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1687258581}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be76e5f14cfee674cb30b491fb72b09b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!20 &1687258584
 Camera:
   m_ObjectHideFlags: 0
@@ -563,7 +559,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 10000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -589,8 +585,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
-  m_LocalRotation: {x: -0.022957042, y: 0.97606146, z: -0.17338957, w: -0.12927918}
-  m_LocalPosition: {x: 2.32, y: 1.203, z: 2.378}
+  m_LocalRotation: {x: -0.2318943, y: -0.6475271, z: 0.21647207, w: -0.6928734}
+  m_LocalPosition: {x: -58.031586, y: 245.64592, z: 97.62109}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
