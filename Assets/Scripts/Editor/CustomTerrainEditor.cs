@@ -48,6 +48,8 @@ public class CustomTerrainEditor : Editor
 	SerializedProperty maxDetails;
 	SerializedProperty detailSpacing;
 
+	SerializedProperty waterHeight;
+	SerializedProperty waterGO;
 
 
 
@@ -67,6 +69,7 @@ public class CustomTerrainEditor : Editor
 	bool showSplatMaps = false;
 	bool showVeg = false;
 	bool showDetail = false;
+	bool showWater = false;
 
 	private void OnEnable()
 	{
@@ -105,10 +108,8 @@ public class CustomTerrainEditor : Editor
 		maxDetails = serializedObject.FindProperty("maxDetails");
 		detailSpacing = serializedObject.FindProperty("detailSpacing");
 
-
-
-
-
+		waterHeight = serializedObject.FindProperty("waterHeight");
+		waterGO = serializedObject.FindProperty("waterGO");
 	}
 	public override void OnInspectorGUI()
 	{
@@ -258,6 +259,7 @@ public class CustomTerrainEditor : Editor
 			EditorGUILayout.IntSlider(detailSpacing, 1, 20, new GUIContent("Detail Spacing"));
 			detailMapTable = GUITableLayout.DrawTable(detailMapTable, serializedObject.FindProperty("details"));
 
+			terrain.GetComponent<Terrain>().detailObjectDistance = maxDetails.intValue;
 			GUILayout.Space(20);
 			EditorGUILayout.BeginHorizontal();
 			if (GUILayout.Button("+"))
@@ -272,6 +274,20 @@ public class CustomTerrainEditor : Editor
 			if (GUILayout.Button("Apply Details"))
 			{
 				terrain.AddDetails();
+			}
+		}
+
+		showWater = EditorGUILayout.Foldout(showWater, "Show Water");
+		if (showWater)
+		{
+			EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+			GUILayout.Label("Water", EditorStyles.boldLabel);
+			EditorGUILayout.Slider(waterHeight, 0, 1, new GUIContent("Water Height"));
+			EditorGUILayout.PropertyField(waterGO);
+
+			if (GUILayout.Button("Add Water"))
+			{
+				terrain.AddWater();
 			}
 		}
 

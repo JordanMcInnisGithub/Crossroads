@@ -106,11 +106,17 @@ public class CustomTerrain : MonoBehaviour
 		public float overlap = 0.01f;
 		public float feather = 0.05f;
 		public float density = 0.5f;
+		public Color dryColour = Color.white;
+		public Color healthyColour = Color.white;
 		public bool remove = false;
 
 	}
 	public int maxDetails = 5000;
 	public int detailSpacing = 5;
+
+	//Water --------
+	public float waterHeight = 0.5f;
+	public GameObject waterGO;
 
 	//Tables --------
 	public List<SplatHeights> splatHeights = new List<SplatHeights>()
@@ -172,6 +178,18 @@ public class CustomTerrain : MonoBehaviour
 		}
 	}
 
+	public void AddWater()
+	{
+		GameObject water = GameObject.Find("water");
+		if (!water)
+		{
+			water = Instantiate(waterGO, this.transform.position, this.transform.rotation);
+			water.name = "water";
+		}
+		water.transform.position = this.transform.position + new Vector3(terrainData.size.x, waterHeight * terrainData.size.y, terrainData.size.z / 2);
+		water.transform.localScale = new Vector3(terrainData.size.x / 4, 1, terrainData.size.z / 4);
+	}
+
 	public void AddDetails()
 	{
 		DetailPrototype[] newDetailPrototypes;
@@ -184,12 +202,10 @@ public class CustomTerrain : MonoBehaviour
 			newDetailPrototypes[dIndex] = new DetailPrototype();
 			newDetailPrototypes[dIndex].prototype = d.prototype;
 			newDetailPrototypes[dIndex].prototypeTexture = d.prototypeTexture;
-			newDetailPrototypes[dIndex].healthyColor = Color.white;
-			newDetailPrototypes[dIndex].dryColor = Color.white;
-			newDetailPrototypes[dIndex].minHeight = d.minHeight;
-			newDetailPrototypes[dIndex].maxHeight = d.maxHeight;
-			//newDetailPrototypes[dIndex].minWidth = d.widthRange.x;
-			//newDetailPrototypes[dIndex].maxWidth = d.widthRange.y;
+			newDetailPrototypes[dIndex].healthyColor = d.healthyColour;
+			newDetailPrototypes[dIndex].dryColor = d.dryColour;
+			//newDetailPrototypes[dIndex].minHeight = d.minHeight;
+			//newDetailPrototypes[dIndex].maxHeight = d.maxHeight;
 			newDetailPrototypes[dIndex].noiseSpread = d.feather;
 
 			if (newDetailPrototypes[dIndex].prototype)
@@ -226,13 +242,6 @@ public class CustomTerrain : MonoBehaviour
 											details[i].overlap * thisNoise;
 
 					float thisHeight = heightMap[(int)(yHM / terrainData.size.z * terrainData.alphamapHeight),(int)(xHM / terrainData.size.x * terrainData.alphamapWidth)];
-					//float thisHeight = terrainData.GetHeight(
-
-					//		(int)(xHM * terrainData.alphamapWidth / terrainData.size.x),
-
-					//		(int)(yHM * terrainData.alphamapHeight / terrainData.size.z))
-
-					//		/ terrainData.size.y;
 					float steepness = terrainData.GetSteepness(xHM / (float)terrainData.size.x, yHM / (float)terrainData.size.z);
 					if ((thisHeight >= thisHeightStart && thisHeight <= nextHeightStart) &&
 						(steepness >= details[i].minSlope && steepness <= details[i].maxSlope))
