@@ -126,6 +126,7 @@ public class CustomTerrain : MonoBehaviour
 	public float solubility = 0.01f;
 	public int droplets = 10;
 	public int erosionSmoothAmount = 5;
+	public float thermalStrength = 0.001f;
 
 	//Tables --------
 	public List<SplatHeights> splatHeights = new List<SplatHeights>()
@@ -213,12 +214,53 @@ public class CustomTerrain : MonoBehaviour
 
 	void Tidal()
 	{
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
 
+		for (int z = 0; z < terrainData.alphamapHeight; z++)
+		{
+			for (int x = 0; x < terrainData.alphamapWidth; x++)
+			{
+				Vector2 thisLocation = new Vector2(x, z);
+				List<Vector2> neighbours = GenerateNeighbours(thisLocation, terrainData.alphamapWidth, terrainData.alphamapHeight);
+
+				foreach (Vector2 n in neighbours)
+				{
+					if (heightMap[x, z] < waterHeight && heightMap[(int)n.x, (int)n.y] > waterHeight)
+					{
+						heightMap[x, z] = waterHeight;
+						heightMap[(int)n.x, (int)n.y] = waterHeight;
+					}
+				}
+			}
+		}
+
+		terrainData.SetHeights(0, 0, heightMap);
 	}
 
 	void Thermal()
 	{
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
 
+		for (int z = 0; z < terrainData.alphamapHeight; z++)
+		{
+			for (int x = 0; x < terrainData.alphamapWidth; x++)
+			{
+				Vector2 thisLocation = new Vector2(x, z);
+				List<Vector2> neighbours = GenerateNeighbours(thisLocation, terrainData.alphamapWidth, terrainData.alphamapHeight);
+
+				foreach (Vector2 n in neighbours)
+				{
+					if (heightMap[x,z] > heightMap[(int)n.x, (int)n.y] + erosionStrength)
+					{
+						float currentHeight = heightMap[x, z];
+						heightMap[x, z] -= currentHeight * thermalStrength;
+						heightMap[(int)n.x, (int)n.y] += currentHeight * thermalStrength;
+					}
+				}
+			}
+		}
+
+		terrainData.SetHeights(0, 0, heightMap);
 	}
 
 	void River()
