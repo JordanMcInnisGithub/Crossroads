@@ -127,6 +127,7 @@ public class CustomTerrain : MonoBehaviour
 	public int droplets = 10;
 	public int erosionSmoothAmount = 5;
 	public float thermalStrength = 0.001f;
+	public float windDirection = 0;
 
 	//Tables --------
 	public List<SplatHeights> splatHeights = new List<SplatHeights>()
@@ -265,12 +266,90 @@ public class CustomTerrain : MonoBehaviour
 
 	void River()
 	{
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
+		float[,] erosionMap = new float[terrainData.alphamapWidth, terrainData.alphamapHeight];
 
+		for (int i = 0; i < droplets; i++)
+		{
+			Vector2 dropletPosition = new Vector2(UnityEngine.Random.Range(0, terrainData.alphamapWidth), UnityEngine.Random.Range(0, terrainData.alphamapHeight));
+
+			erosionMap[(int)dropletPosition.x, (int)dropletPosition.y] = erosionStrength;
+
+			for (int j = 0; j < springsPerRiver; j++)
+			{
+				erosionMap = RunRiver(dropletPosition, heightMap, erosionMap, terrainData.alphamapWidth, terrainData.alphamapHeight);
+			}
+		}
+
+		for (int z = 0; z < terrainData.alphamapHeight; z++)
+		{
+			for (int x = 0; x < terrainData.alphamapWidth; x++)
+			{
+				if (erosionMap[x,z] > 0)
+				{
+					heightMap[x, z] -= erosionMap[x, z];
+				}
+			}
+		}
+		terrainData.SetHeights(0, 0, heightMap);
+
+	}
+
+	float[,] RunRiver(Vector3 dropletPosition, float[,] heightMap, float[,] erosionMap, int width, int height)
+	{
+		while (erosionMap[(int)dropletPosition.x, (int)dropletPosition.y] > 0)
+		{
+			List<Vector2> neighbours = GenerateNeighbours(dropletPosition, width, height);
+			neighbours.Shuffle();
+			bool foundLower = false;
+			foreach(Vector2 n in neighbours)
+			{
+				if (heightMap[(int)n.x, (int)n.y] < heightMap[(int)dropletPosition.x, (int)dropletPosition.y])
+				{
+					erosionMap[(int)n.x, (int)n.y] = erosionMap[(int)dropletPosition.x, (int)dropletPosition.y] - solubility;
+					dropletPosition = n;
+					foundLower = true;
+					break;
+				}
+			}
+			if (!foundLower)
+			{
+				erosionMap[(int)dropletPosition.x, (int)dropletPosition.y] -= solubility;
+			}
+		}
+		return erosionMap;
 	}
 
 	void Wind()
 	{
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
+		int width = terrainData.alphamapWidth;
+		int height = terrainData.alphamapHeight;
 
+		float WindDir = windDirection;
+		float sinAngle = -Mathf.Sin(Mathf.Deg2Rad * WindDir);
+		float cosAngle = Mathf.Cos(Mathf.Deg2Rad * WindDir);
+
+		for (int z = -(height - 1)*2; z <= height*2; z+=10)
+		{
+			for (int x = -(width - 1)*2; x <= width*2; x+=1)
+			{
+				float thisNoise = (float)Mathf.PerlinNoise(x * 0.06f, z * 0.06f) * 20 * erosionStrength;
+				int nx = (int)x;
+				int digz = (int)z + (int)thisNoise;
+				int nz = (int)z + 5 + (int)thisNoise; // this increment has to be smaller than the increment in the for loop, should be roughly half
+
+				Vector2 digCoords = new Vector2(x * cosAngle - digz * sinAngle, digz * cosAngle + x * sinAngle);
+				Vector2 pileCoords = new Vector2(nx * cosAngle - nz * sinAngle, nz * cosAngle + nx * sinAngle);
+
+				if (!(pileCoords.x < 0 || pileCoords.x > (width - 1) || pileCoords.y < 0 || pileCoords.y > (height - 1) || (int)digCoords.x < 0 || (int)digCoords.x > (width - 1) || (int)digCoords.y < 0 || (int)digCoords.y > (height - 1)))
+				{
+					heightMap[(int)digCoords.x, (int)digCoords.y] -= 0.001f;
+					heightMap[(int)pileCoords.x, (int)pileCoords.y] += 0.001f;
+				}
+			}
+		}
+		terrainData.SetHeights(0, 0, heightMap);
 	}
 
 	public void AddWater()

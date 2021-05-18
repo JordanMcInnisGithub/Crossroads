@@ -58,6 +58,9 @@ public class CustomTerrainEditor : Editor
 	SerializedProperty droplets;
 	SerializedProperty erosionSmoothAmount;
 	SerializedProperty thermalStrength;
+	SerializedProperty windDirection;
+
+	
 
 
 
@@ -123,6 +126,7 @@ public class CustomTerrainEditor : Editor
 		droplets = serializedObject.FindProperty("droplets");
 		erosionSmoothAmount = serializedObject.FindProperty("erosionSmoothAmount");
 		thermalStrength = serializedObject.FindProperty("thermalStrength");
+		windDirection = serializedObject.FindProperty("windDirection");
 
 	}
 	public override void OnInspectorGUI()
@@ -314,6 +318,8 @@ public class CustomTerrainEditor : Editor
 			EditorGUILayout.IntSlider(springsPerRiver, 0, 20, new GUIContent("Springs Per River"));
 			EditorGUILayout.IntSlider(erosionSmoothAmount, 0, 10, new GUIContent("Smooth Amount"));
 			EditorGUILayout.Slider(thermalStrength, 0.001f, 1, new GUIContent("Thermal Strength"));
+			EditorGUILayout.Slider(windDirection, 0, 180, new GUIContent("Wind Direction"));
+
 
 
 			if (GUILayout.Button("Erode"))
