@@ -51,10 +51,12 @@ public class CustomTerrainEditor : Editor
 	SerializedProperty waterHeight;
 	SerializedProperty waterGO;
 
-
-
-
-
+	SerializedProperty erosionType;
+	SerializedProperty erosionStrength;
+	SerializedProperty springsPerRiver;
+	SerializedProperty solubility;
+	SerializedProperty droplets;
+	SerializedProperty erosionSmoothAmount;
 
 
 
@@ -70,6 +72,7 @@ public class CustomTerrainEditor : Editor
 	bool showVeg = false;
 	bool showDetail = false;
 	bool showWater = false;
+	bool showErosion = false;
 
 	private void OnEnable()
 	{
@@ -110,6 +113,14 @@ public class CustomTerrainEditor : Editor
 
 		waterHeight = serializedObject.FindProperty("waterHeight");
 		waterGO = serializedObject.FindProperty("waterGO");
+
+		erosionType = serializedObject.FindProperty("erosionType");
+		erosionStrength = serializedObject.FindProperty("erosionStrength");
+		springsPerRiver = serializedObject.FindProperty("springsPerRiver");
+		solubility = serializedObject.FindProperty("solubility");
+		droplets = serializedObject.FindProperty("droplets");
+		erosionSmoothAmount = serializedObject.FindProperty("erosionSmoothAmount");
+
 	}
 	public override void OnInspectorGUI()
 	{
@@ -288,6 +299,21 @@ public class CustomTerrainEditor : Editor
 			if (GUILayout.Button("Add Water"))
 			{
 				terrain.AddWater();
+			}
+		}
+		showErosion = EditorGUILayout.Foldout(showErosion, "Erosion");
+		if (showErosion)
+		{
+			EditorGUILayout.PropertyField(erosionType);
+			EditorGUILayout.Slider(erosionStrength, 0, 1, new GUIContent("Erosion Strength"));
+			EditorGUILayout.IntSlider(droplets, 0, 500, new GUIContent("Droplets"));
+			EditorGUILayout.Slider(solubility, 0.001f, 1, new GUIContent("Solubility"));
+			EditorGUILayout.IntSlider(springsPerRiver, 0, 20, new GUIContent("Springs Per River"));
+			EditorGUILayout.IntSlider(erosionSmoothAmount, 0, 10, new GUIContent("Smooth Amount"));
+
+			if (GUILayout.Button("Erode"))
+			{
+				terrain.Erode();
 			}
 		}
 

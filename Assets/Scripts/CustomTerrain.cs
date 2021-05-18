@@ -118,6 +118,15 @@ public class CustomTerrain : MonoBehaviour
 	public float waterHeight = 0.5f;
 	public GameObject waterGO;
 
+	// Erosion --------
+	public enum ErosionType { Rain = 0, Thermal = 1, Tidal = 2, River = 3, Wind = 4 }
+	public ErosionType erosionType = ErosionType.Rain;
+	public float erosionStrength = 0.1f;
+	public int springsPerRiver = 5;
+	public float solubility = 0.01f;
+	public int droplets = 10;
+	public int erosionSmoothAmount = 5;
+
 	//Tables --------
 	public List<SplatHeights> splatHeights = new List<SplatHeights>()
 	{
@@ -176,6 +185,50 @@ public class CustomTerrain : MonoBehaviour
 		{
 			return new float[terrainData.heightmapResolution, terrainData.heightmapResolution];
 		}
+	}
+
+	public void Erode()
+	{
+		if (erosionType == ErosionType.Rain) Rain();
+		else if (erosionType == ErosionType.Tidal) Tidal();
+		else if (erosionType == ErosionType.Thermal) Thermal();
+		else if (erosionType == ErosionType.River) River();
+		else if (erosionType == ErosionType.Wind) Wind();
+
+		SmoothAmount = erosionSmoothAmount;
+		Smooth();
+	}
+
+	void Rain()
+	{
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
+
+		for (int i = 0; i < droplets; i++)
+		{
+			heightMap[UnityEngine.Random.Range(0, terrainData.alphamapWidth), UnityEngine.Random.Range(0, terrainData.alphamapHeight)] -= erosionStrength;
+		}
+
+		terrainData.SetHeights(0, 0, heightMap);
+	}
+
+	void Tidal()
+	{
+
+	}
+
+	void Thermal()
+	{
+
+	}
+
+	void River()
+	{
+
+	}
+
+	void Wind()
+	{
+
 	}
 
 	public void AddWater()
