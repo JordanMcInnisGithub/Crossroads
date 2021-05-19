@@ -129,6 +129,10 @@ public class CustomTerrain : MonoBehaviour
 	public float thermalStrength = 0.001f;
 	public float windDirection = 0;
 
+	// Generation ------
+	public int seed = 123456789;
+
+
 	//Tables --------
 	public List<SplatHeights> splatHeights = new List<SplatHeights>()
 	{
@@ -177,7 +181,78 @@ public class CustomTerrain : MonoBehaviour
 		terrainData = Terrain.activeTerrain.terrainData;
 	}
 
-	float[,] GetHeightMap()
+	private void OnDrawGizmos()
+	{
+		Gizmos.DrawSphere(new Vector3(terrainData.alphamapWidth / 2, 0, terrainData.alphamapWidth / 2), 100f);
+	}
+
+	// Main generation function
+	// TODO have this function take a seed value and gnerate consistent results
+	// TODO implement some degree of customization
+	public void Generate()
+	{
+		Debug.Log("Starting Generation");
+		MidPointDisplacement();
+		foreach (PerlinParameters p in perlinParameters)
+		{
+			int rValue = seed + UnityEngine.Random.Range(0, 1000);
+			p.mPerlinOffsetX = rValue;
+			p.mPerlinOffsetZ = rValue;
+		}
+		MultiplePerlinTerrain();
+		Islandize();
+
+		SplatMaps();
+		//float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
+
+		//for (int z = 0; z < terrainData.alphamapHeight; z++)
+		//{
+		//	for (int x = 0; x < terrainData.alphamapWidth; x++)
+		//	{
+		//		if (heightMap[x, z] == 1)
+		//		{
+		//			Debug.Log("Reject");
+		//			goto Restart;
+		//		}
+		//	}
+
+		//}
+	}
+
+	public void Islandize()
+	{
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+		float[,] reductionMap = new float[terrainData.heightmapResolution, terrainData.heightmapResolution];
+		float reductionScale = UnityEngine.Random.Range(0.001f, 0.0025f);
+		float randomSeed = UnityEngine.Random.Range(0f, 100000);
+		Vector2 centrePos = new Vector2(terrainData.alphamapWidth / 2, terrainData.alphamapHeight / 2);
+		float maxDistance = Mathf.Sqrt(Mathf.Pow((0 - centrePos.x), 2f) + Mathf.Pow((0 - centrePos.y), 2f));
+
+
+		//create reductionMap
+		for (int x = 0; x <= terrainData.alphamapWidth; x++)
+		{
+			for (int z = 0; z <= terrainData.alphamapHeight; z++)
+			{
+				reductionMap[x, z] = TerrainUtils.fBM((x + randomSeed) * reductionScale, (z + randomSeed) * reductionScale, 3, 5) * 0.1f;
+			}
+		}
+
+		for (int z = 0; z <= terrainData.alphamapHeight; z++)
+		{
+			for (int x = 0; x <= terrainData.alphamapWidth; x++)
+			{
+				float distanceFromCentre = Mathf.Sqrt(Mathf.Pow((x - centrePos.x),2f) + Mathf.Pow((z - centrePos.y),2f));
+				//Debug.Log("Distance: " + distanceFromCentre + " Reduction: " + Mathf.Pow(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1) - reductionMap[x, z], 4f));
+				heightMap[x, z] -= Mathf.Pow(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1) - reductionMap[x,z],4f);
+			}
+
+		}
+		terrainData.SetHeights(0, 0, heightMap);
+
+	}
+
+	float[,] GetHeightMap(bool manualReset = false)
 	{
 		if (!resetTerrain)
 		{
@@ -240,28 +315,31 @@ public class CustomTerrain : MonoBehaviour
 
 	void Thermal()
 	{
-		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
-
-		for (int z = 0; z < terrainData.alphamapHeight; z++)
+		for (int i = 0; i < 5; i++)
 		{
-			for (int x = 0; x < terrainData.alphamapWidth; x++)
-			{
-				Vector2 thisLocation = new Vector2(x, z);
-				List<Vector2> neighbours = GenerateNeighbours(thisLocation, terrainData.alphamapWidth, terrainData.alphamapHeight);
+			float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
 
-				foreach (Vector2 n in neighbours)
+			for (int z = 0; z < terrainData.alphamapHeight; z++)
+			{
+				for (int x = 0; x < terrainData.alphamapWidth; x++)
 				{
-					if (heightMap[x,z] > heightMap[(int)n.x, (int)n.y] + erosionStrength)
+					Vector2 thisLocation = new Vector2(x, z);
+					List<Vector2> neighbours = GenerateNeighbours(thisLocation, terrainData.alphamapWidth, terrainData.alphamapHeight);
+
+					foreach (Vector2 n in neighbours)
 					{
-						float currentHeight = heightMap[x, z];
-						heightMap[x, z] -= currentHeight * thermalStrength;
-						heightMap[(int)n.x, (int)n.y] += currentHeight * thermalStrength;
+						if (heightMap[x, z] > heightMap[(int)n.x, (int)n.y] + erosionStrength)
+						{
+							float currentHeight = heightMap[x, z];
+							heightMap[x, z] -= currentHeight * thermalStrength;
+							heightMap[(int)n.x, (int)n.y] += currentHeight * thermalStrength;
+						}
 					}
 				}
 			}
-		}
 
-		terrainData.SetHeights(0, 0, heightMap);
+			terrainData.SetHeights(0, 0, heightMap);
+		}
 	}
 
 	void River()

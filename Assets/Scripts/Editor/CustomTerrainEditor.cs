@@ -60,6 +60,8 @@ public class CustomTerrainEditor : Editor
 	SerializedProperty thermalStrength;
 	SerializedProperty windDirection;
 
+	SerializedProperty seed;
+
 	
 
 
@@ -127,6 +129,9 @@ public class CustomTerrainEditor : Editor
 		erosionSmoothAmount = serializedObject.FindProperty("erosionSmoothAmount");
 		thermalStrength = serializedObject.FindProperty("thermalStrength");
 		windDirection = serializedObject.FindProperty("windDirection");
+
+		seed = serializedObject.FindProperty("seed");
+
 
 	}
 	public override void OnInspectorGUI()
@@ -345,5 +350,11 @@ public class CustomTerrainEditor : Editor
 			terrain.ResetTerrain();
 		}
 		serializedObject.ApplyModifiedProperties();
+
+		EditorGUILayout.PropertyField(seed);
+		if (GUILayout.Button("Generate"))
+		{
+			terrain.Generate();
+		}
 	}
 }
