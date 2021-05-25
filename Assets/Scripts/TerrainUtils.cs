@@ -22,6 +22,25 @@ public static class TerrainUtils
 
 		return total / maxValue;
 	}
+	//cover 0.65f
+
+
+	//public static float BaseIslandFilter(float val)
+	//{
+	//	float v = val * 255f;
+	//	float c = cover * 255f;
+
+	//	float p = v - (255f - c);
+
+	//	if (p < 0) p = 0;
+
+	//	float n = 255f - (Mathf.Pow(sharpness, p * powerFactor) * 255f);
+
+	//	n /= 255f;
+
+	//	return n;
+	//}
+
 
 	public static float Map(float value, float origonalMin, float origonalMax, float targetMin, float targetMax)
 	{

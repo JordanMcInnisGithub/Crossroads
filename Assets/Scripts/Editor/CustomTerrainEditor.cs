@@ -356,5 +356,9 @@ public class CustomTerrainEditor : Editor
 		{
 			terrain.Generate();
 		}
+		if (GUILayout.Button("Debug, Beach"))
+		{
+			terrain.Beach();
+		}
 	}
 }

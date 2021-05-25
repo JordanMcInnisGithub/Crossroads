@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-
 [ExecuteInEditMode]
 public class CustomTerrain : MonoBehaviour
 {
@@ -130,7 +129,7 @@ public class CustomTerrain : MonoBehaviour
 	public float windDirection = 0;
 
 	// Generation ------
-	public int seed = 123456789;
+	public int seed = 0;
 
 
 	//Tables --------
@@ -158,6 +157,15 @@ public class CustomTerrain : MonoBehaviour
 	public enum TagType { Tag = 0, Layer = 1}
 	[SerializeField]
 	int terrainLayer = -1;
+
+
+	//Globals -------
+	private Vector2 centrePos;
+	private readonly int beachLength = 3;
+	//private Noise.PerlinNoise newNoise;
+
+
+
 	private void Awake()
 	{
 		SerializedObject tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
@@ -176,14 +184,18 @@ public class CustomTerrain : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		Debug.Log("Initialising Terrain Data");
 		terrain = this.GetComponent<Terrain>();
+		//newNoise = new Noise.PerlinNoise(1.002f, 8, 9999);
+		//newNoise.Initialize();
 		terrainData = Terrain.activeTerrain.terrainData;
+		centrePos = new Vector2(terrainData.alphamapWidth / 2, terrainData.alphamapHeight / 2);
+		Debug.Log("Initialized Terrain Data");
 	}
+	//globals
 
 	private void OnDrawGizmos()
 	{
-		Gizmos.DrawSphere(new Vector3(terrainData.alphamapWidth / 2, 0, terrainData.alphamapWidth / 2), 100f);
+		//Gizmos.DrawSphere(new Vector3(terrainData.alphamapWidth / 2, 0, terrainData.alphamapWidth / 2), 100f);
 	}
 
 	// Main generation function
@@ -192,15 +204,20 @@ public class CustomTerrain : MonoBehaviour
 	public void Generate()
 	{
 		Debug.Log("Starting Generation");
-		MidPointDisplacement();
+		//create base terrain
+		// TODO refine this to be more in line with what we want
+		//MidPointDisplacement();
 		foreach (PerlinParameters p in perlinParameters)
 		{
-			int rValue = seed + UnityEngine.Random.Range(0, 1000);
-			p.mPerlinOffsetX = rValue;
-			p.mPerlinOffsetZ = rValue;
+			p.mPerlinOffsetX = UnityEngine.Random.Range(0, 1000);
+			p.mPerlinOffsetZ = UnityEngine.Random.Range(0, 1000);
 		}
-		MultiplePerlinTerrain();
+		//add noise to make terrain look more natural
+		//drop edges in natural fashion
+		//r
 		Islandize();
+		//Beach();
+
 
 		SplatMaps();
 		//float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
@@ -215,17 +232,17 @@ public class CustomTerrain : MonoBehaviour
 		//			goto Restart;
 		//		}
 		//	}
-
+		//
 		//}
 	}
-
 	public void Islandize()
 	{
+		Perlin(true);
+		//MultiplePerlinTerrain();
 		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
 		float[,] reductionMap = new float[terrainData.heightmapResolution, terrainData.heightmapResolution];
 		float reductionScale = UnityEngine.Random.Range(0.001f, 0.0025f);
-		float randomSeed = UnityEngine.Random.Range(0f, 100000);
-		Vector2 centrePos = new Vector2(terrainData.alphamapWidth / 2, terrainData.alphamapHeight / 2);
+		float randomSeed = UnityEngine.Random.Range(0f, 10000);
 		float maxDistance = Mathf.Sqrt(Mathf.Pow((0 - centrePos.x), 2f) + Mathf.Pow((0 - centrePos.y), 2f));
 
 
@@ -242,14 +259,65 @@ public class CustomTerrain : MonoBehaviour
 		{
 			for (int x = 0; x <= terrainData.alphamapWidth; x++)
 			{
-				float distanceFromCentre = Mathf.Sqrt(Mathf.Pow((x - centrePos.x),2f) + Mathf.Pow((z - centrePos.y),2f));
+				float distanceFromCentre = DistanceFromCentre(new Vector2(x,z));
 				//Debug.Log("Distance: " + distanceFromCentre + " Reduction: " + Mathf.Pow(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1) - reductionMap[x, z], 4f));
-				heightMap[x, z] -= Mathf.Pow(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1) - reductionMap[x,z],4f);
+				heightMap[x, z] -= determineFalloff(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1)) + (reductionMap[x,z]);
 			}
 
 		}
 		terrainData.SetHeights(0, 0, heightMap);
 
+	}
+
+	private float determineFalloff(float x)
+	{
+		float a = 2.7f;
+		float b = 3f;
+
+		return Mathf.Pow(x, a) / ( Mathf.Pow(x, a) + Mathf.Pow((b - b * x),a));
+
+	}
+	public void Beach()
+	{
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
+		List<Vector2> beachStarts = new List<Vector2>();
+		for (int z = 0; z < terrainData.alphamapHeight; z++)
+		{
+			for (int x = 0; x < terrainData.alphamapWidth; x++)
+			{
+				//optimization
+				if (waterHeight < heightMap[x, z] && heightMap[x,z] < (waterHeight + 0.0001) && DistanceFromCentre(new Vector2(x,z)) > 0.4f)
+				{
+					Vector2 thisLocation = new Vector2(x, z);
+					heightMap[x, z] = 0.4f;
+					beachStarts.Add(thisLocation);
+				}
+			}
+		}
+		//buildBeach(beachStarts, 0f, ref heightMap);
+		terrainData.SetHeights(0, 0, heightMap);
+	}
+
+	private void buildBeach(List<Vector2> points, float currentDistance, ref float[,] heightMap)
+	{
+		foreach (Vector2 point in points)
+		{
+			List<Vector2> neighbours = GenerateNeighbours(point, terrainData.alphamapWidth, terrainData.alphamapHeight);
+			foreach (Vector2 n in neighbours)
+			{
+				if (heightMap[(int)point.x, (int)point.y] > heightMap[(int)n.x, (int)n.y] && currentDistance <= beachLength)
+				{
+					heightMap[(int)n.x, (int)n.y] = heightMap[(int)point.x, (int)point.y]-0.001f;
+					List<Vector2> newPoints = GenerateNeighbours(n, terrainData.alphamapWidth, terrainData.alphamapHeight);
+					buildBeach(newPoints, currentDistance + 1, ref heightMap);
+				}
+			}
+		}
+
+	}
+	private float DistanceFromCentre(Vector2 pos)
+	{
+		return Mathf.Sqrt(Mathf.Pow((pos.x - centrePos.x), 2f) + Mathf.Pow((pos.y - centrePos.y), 2f));
 	}
 
 	float[,] GetHeightMap(bool manualReset = false)
@@ -288,6 +356,7 @@ public class CustomTerrain : MonoBehaviour
 		terrainData.SetHeights(0, 0, heightMap);
 	}
 
+
 	void Tidal()
 	{
 		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
@@ -296,15 +365,19 @@ public class CustomTerrain : MonoBehaviour
 		{
 			for (int x = 0; x < terrainData.alphamapWidth; x++)
 			{
-				Vector2 thisLocation = new Vector2(x, z);
-				List<Vector2> neighbours = GenerateNeighbours(thisLocation, terrainData.alphamapWidth, terrainData.alphamapHeight);
-
-				foreach (Vector2 n in neighbours)
+				//optimization
+				if (heightMap[x, z] < (waterHeight + 0.02))
 				{
-					if (heightMap[x, z] < waterHeight && heightMap[(int)n.x, (int)n.y] > waterHeight)
+					Vector2 thisLocation = new Vector2(x, z);
+					List<Vector2> neighbours = GenerateNeighbours(thisLocation, terrainData.alphamapWidth, terrainData.alphamapHeight);
+
+					foreach (Vector2 n in neighbours)
 					{
-						heightMap[x, z] = waterHeight;
-						heightMap[(int)n.x, (int)n.y] = waterHeight;
+						if (heightMap[x, z] < waterHeight && heightMap[(int)n.x, (int)n.y] > waterHeight)
+						{
+							heightMap[x, z] = waterHeight;
+							heightMap[(int)n.x, (int)n.y] = waterHeight;
+						}
 					}
 				}
 			}
@@ -739,15 +812,24 @@ public class CustomTerrain : MonoBehaviour
 			v[i] /= total;
 		}
 	}
-	public void Perlin()
+	public void Perlin(bool modified = false)
 	{
 		float[,] heightMap = GetHeightMap();
-
+		float min = float.MinValue;
+		float max = float.MaxValue;
+		modified = true; //REMOVE
 		for (int x = 0; x < terrainData.heightmapResolution; x++)
 		{
 			for (int z = 0; z < terrainData.heightmapResolution; z++)
 			{
-				heightMap[x, z] += TerrainUtils.fBM((x + perlinOffsetX) * perlinXScale, (z + perlinOffsetZ) * perlinZScale, perlinOctaves, perlinPersistance) * perlinHeightScale;
+				if (modified)
+				{
+					heightMap[x, z] += TerrainUtils.fBM((x + perlinOffsetX) * perlinXScale, (z + perlinOffsetZ) * perlinZScale, perlinOctaves, perlinPersistance) * perlinHeightScale;
+				}
+				else
+				{
+					heightMap[x, z] += TerrainUtils.fBM((x + perlinOffsetX) * perlinXScale, (z + perlinOffsetZ) * perlinZScale, perlinOctaves, perlinPersistance) * perlinHeightScale;
+				}
 			}
 		}
 		terrainData.SetHeights(0, 0, heightMap);
