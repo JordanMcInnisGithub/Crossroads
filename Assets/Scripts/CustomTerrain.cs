@@ -157,12 +157,41 @@ public class CustomTerrain : MonoBehaviour
 	public enum TagType { Tag = 0, Layer = 1}
 	[SerializeField]
 	int terrainLayer = -1;
+	// Features
+	public enum FeatureType { Lake = 0}
+	public class terrainFeature
+	{
+		public FeatureType type;
+		public int xSlope;
+		public int zSlope;
+		public int size;
+		public List<Vector2> border;
+		public List<Vector2> points;
 
+		public terrainFeature(FeatureType inType, List<Vector2> inPoints)
+		{
+			type = inType;
+			points = inPoints;
+			border = TerrainUtils.GrahamScan(points) as List<Vector2>;
+			int size = points.Count;
+		}
+		public void updateData(List<Vector2> newPoints = null)
+		{
+			if (newPoints != null)
+				points = newPoints;
+			size = points.Count;
+			border = TerrainUtils.GrahamScan(points) as List<Vector2>;
+		}
+		public bool includedIn(Vector2 point)
+		{
+			return points.Any(p => p.x == point.x && p.y == point.y);
+		}
+
+	}
 
 	//Globals -------
 	private Vector2 centrePos;
-	private readonly int beachLength = 3;
-	//private Noise.PerlinNoise newNoise;
+	private List<terrainFeature> featureList;
 
 
 
@@ -189,13 +218,14 @@ public class CustomTerrain : MonoBehaviour
 		//newNoise.Initialize();
 		terrainData = Terrain.activeTerrain.terrainData;
 		centrePos = new Vector2(terrainData.alphamapWidth / 2, terrainData.alphamapHeight / 2);
+		featureList = new List<terrainFeature>();
 		Debug.Log("Initialized Terrain Data");
 	}
 	//globals
 
 	private void OnDrawGizmos()
 	{
-		//Gizmos.DrawSphere(new Vector3(terrainData.alphamapWidth / 2, 0, terrainData.alphamapWidth / 2), 100f);
+		Gizmos.DrawSphere(new Vector3(terrainData.alphamapWidth / 2, 0, terrainData.alphamapWidth / 2), 10f);
 	}
 
 	// Main generation function
@@ -205,8 +235,6 @@ public class CustomTerrain : MonoBehaviour
 	{
 		Debug.Log("Starting Generation");
 		//create base terrain
-		// TODO refine this to be more in line with what we want
-		//MidPointDisplacement();
 		foreach (PerlinParameters p in perlinParameters)
 		{
 			p.mPerlinOffsetX = UnityEngine.Random.Range(0, 1000);
@@ -214,26 +242,27 @@ public class CustomTerrain : MonoBehaviour
 		}
 		//add noise to make terrain look more natural
 		//drop edges in natural fashion
-		//r
 		Islandize();
-		//Beach();
-
-
+		RemoveInlandLakes(1);
 		SplatMaps();
-		//float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
+	}
 
-		//for (int z = 0; z < terrainData.alphamapHeight; z++)
-		//{
-		//	for (int x = 0; x < terrainData.alphamapWidth; x++)
-		//	{
-		//		if (heightMap[x, z] == 1)
-		//		{
-		//			Debug.Log("Reject");
-		//			goto Restart;
-		//		}
-		//	}
-		//
-		//}
+	private void createVoronoi(int points = 3)
+	{
+		List<Vector2> voronoiPoints = new List<Vector2>();
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+
+
+		while (voronoiPoints.Count < 3)
+		{
+			Vector2 randomPoint = new Vector2(UnityEngine.Random.Range(0, terrainData.alphamapResolution), UnityEngine.Random.Range(0, terrainData.alphamapResolution));
+			if (heightMap[(int)randomPoint.x,(int)randomPoint.y] >= 0.19f)
+			{
+				voronoiPoints.Add(randomPoint);
+			}
+		}
+
+
 	}
 	public void Islandize()
 	{
@@ -262,12 +291,81 @@ public class CustomTerrain : MonoBehaviour
 				float distanceFromCentre = DistanceFromCentre(new Vector2(x,z));
 				//Debug.Log("Distance: " + distanceFromCentre + " Reduction: " + Mathf.Pow(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1) - reductionMap[x, z], 4f));
 				heightMap[x, z] -= determineFalloff(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1)) + (reductionMap[x,z]);
+				if (heightMap[x, z] > 0.1f) heightMap[x, z] = 0.1f;
 			}
 
 		}
 		terrainData.SetHeights(0, 0, heightMap);
 
 	}
+
+	/// <summary>This method located removes all but r amount of inlandLakes</summary>
+	/// <param name="r">Amount of inland lakes to keep</param>
+	/// <param name="lakePoints">Can indlue a "short-list" amount of lakePoints to improve effeciency, passing entire heightmap will also work</param>
+	private void RemoveInlandLakes(int r)
+	{
+		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+		bool[,] visited = new bool[terrainData.alphamapResolution, terrainData.alphamapResolution];
+
+		List<List<Vector2>> lakes = new List<List<Vector2>>();
+		for (int x = 0; x <= terrainData.alphamapWidth; x++)
+		{
+			for (int z = 0; z <= terrainData.alphamapHeight; z++)
+			{
+				if (heightMap[x,z] < waterHeight && visited[x,z] != true)
+				{
+					visited[x,z] = true;
+					Vector2 cur = new Vector2(x, z);
+					List<Vector2> neighbours = GenerateNeighbours(cur, terrainData.heightmapResolution, terrainData.heightmapResolution);
+					List<Vector2> currentFeautre = new List<Vector2>() { cur };
+
+					//get neighbours that are underwater
+					foreach(Vector2 n in neighbours)
+					{
+						visited[(int)n.x, (int)n.y] = true;
+						if (heightMap[(int)n.x,(int)n.y] < waterHeight)
+						{
+							currentFeautre.Add(n);
+						}
+					}
+					lakes = addLake(currentFeautre, lakes);
+				}
+			}
+		}
+		Debug.Log(lakes.Count);
+	}
+	/// <summary>This method will check to see if any of the points from the first param
+	/// exist in the any of lists in the second param, if so, marges the lists with overlapping values</summary>
+	/// <param name="lakeToAdd">Current list we are wanting to add</param>
+	/// <param name="currentLakes">Current double list of features/lakes </param>
+	private List<List<Vector2>> addLake(List<Vector2> lakeToAdd, List<List<Vector2>> currentLakes)
+	{
+		//check if any neighbours already exits in a different lake, if so, merge them
+		if (currentLakes.Count == 0)
+		{
+			currentLakes.Add(lakeToAdd);
+			return currentLakes;
+		}
+		else
+		{
+			foreach (List<Vector2> lake in currentLakes)
+			{
+				foreach (Vector2 point in lakeToAdd)
+				{
+					// do any points in current lake already exist in a lake
+					if (lake.Any(p => p.x == point.x && p.y == point.y))
+					{
+						lake.AddRange(lakeToAdd);
+						return currentLakes;
+					}
+				}
+			}
+			currentLakes.Add(lakeToAdd);
+			return currentLakes;
+
+		}
+	}
+
 
 	private float determineFalloff(float x)
 	{
@@ -277,44 +375,16 @@ public class CustomTerrain : MonoBehaviour
 		return Mathf.Pow(x, a) / ( Mathf.Pow(x, a) + Mathf.Pow((b - b * x),a));
 
 	}
+
+	//this is currently going to be used to get an accurate and edgecase proof list of shoreline points
 	public void Beach()
 	{
 		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
-		List<Vector2> beachStarts = new List<Vector2>();
-		for (int z = 0; z < terrainData.alphamapHeight; z++)
-		{
-			for (int x = 0; x < terrainData.alphamapWidth; x++)
-			{
-				//optimization
-				if (waterHeight < heightMap[x, z] && heightMap[x,z] < (waterHeight + 0.0001) && DistanceFromCentre(new Vector2(x,z)) > 0.4f)
-				{
-					Vector2 thisLocation = new Vector2(x, z);
-					heightMap[x, z] = 0.4f;
-					beachStarts.Add(thisLocation);
-				}
-			}
-		}
-		//buildBeach(beachStarts, 0f, ref heightMap);
-		terrainData.SetHeights(0, 0, heightMap);
-	}
 
-	private void buildBeach(List<Vector2> points, float currentDistance, ref float[,] heightMap)
-	{
-		foreach (Vector2 point in points)
-		{
-			List<Vector2> neighbours = GenerateNeighbours(point, terrainData.alphamapWidth, terrainData.alphamapHeight);
-			foreach (Vector2 n in neighbours)
-			{
-				if (heightMap[(int)point.x, (int)point.y] > heightMap[(int)n.x, (int)n.y] && currentDistance <= beachLength)
-				{
-					heightMap[(int)n.x, (int)n.y] = heightMap[(int)point.x, (int)point.y]-0.001f;
-					List<Vector2> newPoints = GenerateNeighbours(n, terrainData.alphamapWidth, terrainData.alphamapHeight);
-					buildBeach(newPoints, currentDistance + 1, ref heightMap);
-				}
-			}
-		}
 
 	}
+
+
 	private float DistanceFromCentre(Vector2 pos)
 	{
 		return Mathf.Sqrt(Mathf.Pow((pos.x - centrePos.x), 2f) + Mathf.Pow((pos.y - centrePos.y), 2f));
