@@ -158,8 +158,8 @@ MonoBehaviour:
   resetTerrain: 0
   perlinXScale: 0.0004
   perlinZScale: 0.0004
-  perlinOffsetX: 8013
-  perlinOffsetZ: 2972
+  perlinOffsetX: 1934
+  perlinOffsetZ: 8132
   perlinOctaves: 4
   perlinPersistance: 4
   perlinHeightScale: 0.304
@@ -178,7 +178,7 @@ MonoBehaviour:
   treeSpacing: 5
   maxDetails: 8909
   detailSpacing: 4
-  waterHeight: 0.025
+  waterHeight: 0.01
   waterGO: {fileID: 1507636620937791836, guid: 7097ba7ba649e1f41bba232312bdcbd8, type: 3}
   erosionType: 2
   erosionStrength: 0.003
@@ -232,24 +232,24 @@ MonoBehaviour:
     mPerlinOctaves: 3
     mPerlinPersistance: 8
     mPerlinHeightScale: 0.01
-    mPerlinOffsetX: 474
-    mPerlinOffsetZ: 648
+    mPerlinOffsetX: 311
+    mPerlinOffsetZ: 798
     remove: 0
   - mPerlinXScale: 0.0001
     mPerlinZScale: 0.0001
     mPerlinOctaves: 3
     mPerlinPersistance: 8
     mPerlinHeightScale: 0.07
-    mPerlinOffsetX: 174
-    mPerlinOffsetZ: 426
+    mPerlinOffsetX: 341
+    mPerlinOffsetZ: 149
     remove: 0
   - mPerlinXScale: 0.0004
     mPerlinZScale: 0.0004
     mPerlinOctaves: 4
     mPerlinPersistance: 4
     mPerlinHeightScale: 0.25
-    mPerlinOffsetX: 516
-    mPerlinOffsetZ: 31
+    mPerlinOffsetX: 270
+    mPerlinOffsetZ: 406
     remove: 0
   vegetation:
   - prefab: {fileID: 0}
@@ -483,7 +483,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &672123574
+--- !u!1 &992023549
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -491,9 +491,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 672123577}
-  - component: {fileID: 672123576}
-  - component: {fileID: 672123575}
+  - component: {fileID: 992023552}
+  - component: {fileID: 992023551}
+  - component: {fileID: 992023550}
   m_Layer: 0
   m_Name: water
   m_TagString: Untagged
@@ -501,13 +501,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!23 &672123575
+--- !u!23 &992023550
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 672123574}
+  m_GameObject: {fileID: 992023549}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 1
@@ -542,23 +542,23 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &672123576
+--- !u!33 &992023551
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 672123574}
+  m_GameObject: {fileID: 992023549}
   m_Mesh: {fileID: 4300000, guid: 3da23cdf512599b42881988944f3918c, type: 2}
---- !u!4 &672123577
+--- !u!4 &992023552
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 672123574}
+  m_GameObject: {fileID: 992023549}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2048, y: 17.5, z: 1024}
+  m_LocalPosition: {x: 2048, y: 7, z: 1024}
   m_LocalScale: {x: 512, y: 1, z: 512}
   m_Children: []
   m_Father: {fileID: 0}

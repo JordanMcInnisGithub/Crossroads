@@ -192,6 +192,9 @@ public class CustomTerrain : MonoBehaviour
 	//Globals -------
 	private Vector2 centrePos;
 	private List<terrainFeature> featureList;
+	private float maxDistance;
+	private bool[,] visited;
+	private float[,] heightmapTemp; // to be used only for resursive calls, responsible for cleaning on every use
 
 
 
@@ -214,10 +217,10 @@ public class CustomTerrain : MonoBehaviour
 	private void OnEnable()
 	{
 		terrain = this.GetComponent<Terrain>();
-		//newNoise = new Noise.PerlinNoise(1.002f, 8, 9999);
-		//newNoise.Initialize();
 		terrainData = Terrain.activeTerrain.terrainData;
 		centrePos = new Vector2(terrainData.alphamapWidth / 2, terrainData.alphamapHeight / 2);
+		maxDistance = Mathf.Sqrt(Mathf.Pow((0 - centrePos.x), 2f) + Mathf.Pow((0 - centrePos.y), 2f));
+		visited = new bool[terrainData.heightmapResolution, terrainData.heightmapResolution];
 		featureList = new List<terrainFeature>();
 		Debug.Log("Initialized Terrain Data");
 	}
@@ -243,36 +246,24 @@ public class CustomTerrain : MonoBehaviour
 		//add noise to make terrain look more natural
 		//drop edges in natural fashion
 		Islandize();
-		RemoveInlandLakes(1);
+		//RemoveInlandLakes(1);
 		SplatMaps();
 	}
 
-	private void createVoronoi(int points = 3)
-	{
-		List<Vector2> voronoiPoints = new List<Vector2>();
-		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
 
 
-		while (voronoiPoints.Count < 3)
-		{
-			Vector2 randomPoint = new Vector2(UnityEngine.Random.Range(0, terrainData.alphamapResolution), UnityEngine.Random.Range(0, terrainData.alphamapResolution));
-			if (heightMap[(int)randomPoint.x,(int)randomPoint.y] >= 0.19f)
-			{
-				voronoiPoints.Add(randomPoint);
-			}
-		}
 
-
-	}
 	public void Islandize()
 	{
-		Perlin(true);
+		// generate base perlin
+		Perlin();
+
 		//MultiplePerlinTerrain();
 		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
 		float[,] reductionMap = new float[terrainData.heightmapResolution, terrainData.heightmapResolution];
 		float reductionScale = UnityEngine.Random.Range(0.001f, 0.0025f);
 		float randomSeed = UnityEngine.Random.Range(0f, 10000);
-		float maxDistance = Mathf.Sqrt(Mathf.Pow((0 - centrePos.x), 2f) + Mathf.Pow((0 - centrePos.y), 2f));
+		
 
 
 		//create reductionMap
@@ -284,17 +275,34 @@ public class CustomTerrain : MonoBehaviour
 			}
 		}
 
+		//used to determine border
+		List<Vector2> borderPoints = new List<Vector2>();
+
+		//first pass generation
 		for (int z = 0; z <= terrainData.alphamapHeight; z++)
 		{
 			for (int x = 0; x <= terrainData.alphamapWidth; x++)
 			{
-				float distanceFromCentre = DistanceFromCentre(new Vector2(x,z));
-				//Debug.Log("Distance: " + distanceFromCentre + " Reduction: " + Mathf.Pow(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1) - reductionMap[x, z], 4f));
-				heightMap[x, z] -= determineFalloff(TerrainUtils.Map(distanceFromCentre, 0, maxDistance, 0, 1)) + (reductionMap[x,z]);
-				if (heightMap[x, z] > 0.1f) heightMap[x, z] = 0.1f;
+				float pointDistance = DistanceFromCentre(new Vector2(x,z));
+				heightMap[x, z] -= determineFalloff(pointDistance);
+				float temp = heightMap[x, z];
+				if (heightMap[x, z] < waterHeight) heightMap[x, z] = waterHeight + 0.01f;
+				heightMap[x, z] -= reductionMap[x, z];
+
+				// if the reduction formula doesn't get the area to 0 but the reduction map does, this is either an inland lake, or a point just off the coast
+				if (temp > waterHeight && heightMap[x, z] < waterHeight) borderPoints.Add(new Vector2(x, z));
+
+				//if (heightMap[x, z] > 0.1f) heightMap[x, z] = 0.1f;
 			}
 
 		}
+		// use graham scan to determine outer bounds of the map
+		List<Vector2> border = TerrainUtils.GrahamScan(borderPoints) as List<Vector2>;
+		foreach (Vector2 p in border)
+		{
+			//heightMap[(int)p.x, (int)p.y] = 0.5f;
+		}
+
 		terrainData.SetHeights(0, 0, heightMap);
 
 	}
@@ -302,69 +310,7 @@ public class CustomTerrain : MonoBehaviour
 	/// <summary>This method located removes all but r amount of inlandLakes</summary>
 	/// <param name="r">Amount of inland lakes to keep</param>
 	/// <param name="lakePoints">Can indlue a "short-list" amount of lakePoints to improve effeciency, passing entire heightmap will also work</param>
-	private void RemoveInlandLakes(int r)
-	{
-		float[,] heightMap = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
-		bool[,] visited = new bool[terrainData.alphamapResolution, terrainData.alphamapResolution];
 
-		List<List<Vector2>> lakes = new List<List<Vector2>>();
-		for (int x = 0; x <= terrainData.alphamapWidth; x++)
-		{
-			for (int z = 0; z <= terrainData.alphamapHeight; z++)
-			{
-				if (heightMap[x,z] < waterHeight && visited[x,z] != true)
-				{
-					visited[x,z] = true;
-					Vector2 cur = new Vector2(x, z);
-					List<Vector2> neighbours = GenerateNeighbours(cur, terrainData.heightmapResolution, terrainData.heightmapResolution);
-					List<Vector2> currentFeautre = new List<Vector2>() { cur };
-
-					//get neighbours that are underwater
-					foreach(Vector2 n in neighbours)
-					{
-						visited[(int)n.x, (int)n.y] = true;
-						if (heightMap[(int)n.x,(int)n.y] < waterHeight)
-						{
-							currentFeautre.Add(n);
-						}
-					}
-					lakes = addLake(currentFeautre, lakes);
-				}
-			}
-		}
-		Debug.Log(lakes.Count);
-	}
-	/// <summary>This method will check to see if any of the points from the first param
-	/// exist in the any of lists in the second param, if so, marges the lists with overlapping values</summary>
-	/// <param name="lakeToAdd">Current list we are wanting to add</param>
-	/// <param name="currentLakes">Current double list of features/lakes </param>
-	private List<List<Vector2>> addLake(List<Vector2> lakeToAdd, List<List<Vector2>> currentLakes)
-	{
-		//check if any neighbours already exits in a different lake, if so, merge them
-		if (currentLakes.Count == 0)
-		{
-			currentLakes.Add(lakeToAdd);
-			return currentLakes;
-		}
-		else
-		{
-			foreach (List<Vector2> lake in currentLakes)
-			{
-				foreach (Vector2 point in lakeToAdd)
-				{
-					// do any points in current lake already exist in a lake
-					if (lake.Any(p => p.x == point.x && p.y == point.y))
-					{
-						lake.AddRange(lakeToAdd);
-						return currentLakes;
-					}
-				}
-			}
-			currentLakes.Add(lakeToAdd);
-			return currentLakes;
-
-		}
-	}
 
 
 	private float determineFalloff(float x)
@@ -387,7 +333,7 @@ public class CustomTerrain : MonoBehaviour
 
 	private float DistanceFromCentre(Vector2 pos)
 	{
-		return Mathf.Sqrt(Mathf.Pow((pos.x - centrePos.x), 2f) + Mathf.Pow((pos.y - centrePos.y), 2f));
+		return TerrainUtils.Map(Mathf.Sqrt(Mathf.Pow((pos.x - centrePos.x), 2f) + Mathf.Pow((pos.y - centrePos.y), 2f)), 0, maxDistance, 0, 1);
 	}
 
 	float[,] GetHeightMap(bool manualReset = false)
@@ -802,26 +748,6 @@ public class CustomTerrain : MonoBehaviour
 		splatHeights = keptSplatHeights;
 	}
 
-	//uses algo, unity does it better
-	// DEPRECATED
-	float GetSteepness(float[,] heightmap, int x, int z, int width, int height)
-	{
-		float h = heightmap[x, z];
-		int nx = x + 1;
-		int nz = z + 1;
-
-		//if on upper edge find gradient by going backwards
-		if (nx > width - 1) nx = x - 1;
-		if (nz > height - 1) nz = z - 1;
-
-		float dx = heightmap[nx, z] - h;
-		float dz = heightmap[x, nz] - h;
-		Vector2 gradient = new Vector2(dx, dz);
-
-		float steep = gradient.magnitude;
-
-		return steep;
-	}
 	public void SplatMaps()
 	{
 		TerrainLayer[] newSplatPrototypes;
@@ -882,6 +808,20 @@ public class CustomTerrain : MonoBehaviour
 			v[i] /= total;
 		}
 	}
+	public void PerlinModified()
+	{
+		float[,] heightMap = GetHeightMap();
+		for (int x = 0; x < terrainData.heightmapResolution; x++)
+		{
+			for (int z = 0; z < terrainData.heightmapResolution; z++)
+			{
+				heightMap[x, z] += TerrainUtils.fBM((x + perlinOffsetX) * perlinXScale, (z + perlinOffsetZ) * perlinZScale, perlinOctaves, perlinPersistance) * perlinHeightScale;
+
+			}
+		}
+		terrainData.SetHeights(0, 0, heightMap);
+	}
+
 	public void Perlin(bool modified = false)
 	{
 		float[,] heightMap = GetHeightMap();
@@ -1173,3 +1113,110 @@ public class CustomTerrain : MonoBehaviour
 	}
 
 }
+
+
+
+// --------function graveyard--------
+
+
+
+/// This function attempted to group all water points on the map recursively
+/// It works, however the size of the recursive call stack quickly exceed several thousand and exceeds max recursive deptch, might be a usage somewhere else along the project
+
+//private void RemoveInlandLakes(int r)
+//{
+//	heightmapTemp = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+//	// assign visited to all be false
+
+//	List<List<Vector2>> lakes = new List<List<Vector2>>();
+//	//	for each point on map
+//	for (int x = 0; x < terrainData.heightmapResolution; x++)
+//	{
+//		for (int z = 0; z < terrainData.heightmapResolution; z++)
+//		{
+
+//			// has point been visisted?
+//			if (visited[x,z] != true)
+//			{
+//				//  list = isLake(Vector2 point)
+//				// function isLake(Vector2 point)
+//				List<Vector2> tempList = isLake(new List<Vector2> { new Vector2(x,z) },0);
+//				// if list larger than 0 add to global lakes
+//				if (tempList.Count > 0)
+//				{
+//					lakes.Add(tempList);
+//				}
+
+//			}
+
+//		}
+//	}
+//	Debug.Log(lakes.Count);
+//	terrainData.SetHeights(0, 0, heightmapTemp);
+
+//}
+
+//// list<> recursive(final List)
+//private List<Vector2> isLake(List<Vector2> cur, int depth)
+//{
+//	// point = pointList[last item]
+//	Vector2 point = cur[cur.Count - 1];
+//	// check if visisted or above ground
+//	if (heightmapTemp[(int)point.x, (int)point.y] > waterHeight || point.x == terrainData.heightmapResolution-1 || point.y == terrainData.heightmapResolution - 1)
+//	{
+//		Debug.Log("t");
+//	}
+//	if (visited[(int)point.x, (int)point.y] != false || heightmapTemp[(int)point.x, (int)point.y] > waterHeight)
+//	{
+//		// if visited or above ground
+//		// return pointList remove last one
+//		visited[(int)point.x, (int)point.y] = true; // a bit reduntant but I don't think it will matter
+//		cur.RemoveAt(cur.Count - 1);
+//		return cur;
+//	}
+//	else
+//	{
+//		// visited = true
+//		if (depth > 45)
+//		{
+//			return cur;
+//		}
+//		visited[(int)point.x, (int)point.y] = true;
+//		// get all neighbours
+//		List<Vector2> neighbours = GenerateNeighbours(point, terrainData.heightmapResolution, terrainData.heightmapResolution);
+//		neighbours.Remove(point);
+//		// for each neighbour check each
+//		foreach (Vector2 n in neighbours)
+//		{
+//			//final list =+ recursive (new list[neighbour)
+//			if (visited[(int)n.x,(int)n.y] == false)
+//				cur.AddRange(isLake(new List<Vector2> { n }, depth + 1));
+//		}
+
+//	}
+
+//	//return final list;
+//	return cur;
+
+//}
+
+//unity does it better
+// DEPRECATED
+//float GetSteepness(float[,] heightmap, int x, int z, int width, int height)
+//{
+//	float h = heightmap[x, z];
+//	int nx = x + 1;
+//	int nz = z + 1;
+
+//	//if on upper edge find gradient by going backwards
+//	if (nx > width - 1) nx = x - 1;
+//	if (nz > height - 1) nz = z - 1;
+
+//	float dx = heightmap[nx, z] - h;
+//	float dz = heightmap[x, nz] - h;
+//	Vector2 gradient = new Vector2(dx, dz);
+
+//	float steep = gradient.magnitude;
+
+//	return steep;
+//}
